@@ -139,10 +139,14 @@ exports.disablePasscode = async (req, res) => {
   const { password } = req.body;
 
   try {
-    const user = await User.findById(req.user._id).select("+password +passcode");
+    const user = await User.findById(req.user._id).select(
+      "+password +passcode"
+    );
 
     if (!user.passcode) {
-      return res.status(400).json({ message: "No passcode set for this account" });
+      return res
+        .status(400)
+        .json({ message: "No passcode set for this account" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -181,13 +185,50 @@ exports.updateUserProfile = async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({ message: "Profile updated", user: {
-      username: user.username,
-      avatar: user.avatar,
-      userType: user.userType,
-      country: user.country,
-      currency: user.currency,
-    } });
+    res.status(200).json({
+      message: "Profile updated",
+      user: {
+        username: user.username,
+        avatar: user.avatar,
+        userType: user.userType,
+        country: user.country,
+        currency: user.currency,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.deleteAccount = async (req, res) => {
+  const { password } = req.body;
+
+  try {
+    // Find user with password field
+    const user = await User.findById(req.user._id).select("+password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Incorrect password" });
+    }
+
+    // Delete transactions
+    await Transaction.deleteMany({ user: user._id });
+
+    // Delete user
+    await User.findByIdAndDelete(user._id);
+
+    // Clear cookies (optional)
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    res
+      .status(200)
+      .json({ message: "Account and all data deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }

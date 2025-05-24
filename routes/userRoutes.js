@@ -7,6 +7,7 @@ const {
   setPasscode,
   disablePasscode,
   updateUserProfile,
+  deleteAccount,
 } = require("../controllers/userController");
 const { verifyAccessToken, protect } = require("../middlewares/authMiddleware");
 
@@ -16,5 +17,6 @@ router.get("/profile", protect, getLoggedInUser);
 router.post("/set-passcode", protect, setPasscode);
 router.delete("/disable-passcode", protect, disablePasscode);
 router.put("/update-profile", protect, updateUserProfile);
+router.delete("/delete-account", protect, deleteAccount);
 
 module.exports = router;
