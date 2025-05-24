@@ -8,6 +8,7 @@ const {
   disablePasscode,
   updateUserProfile,
   deleteAccount,
+  changePassword,
 } = require("../controllers/userController");
 const { verifyAccessToken, protect } = require("../middlewares/authMiddleware");
 
@@ -18,5 +19,6 @@ router.post("/set-passcode", protect, setPasscode);
 router.delete("/disable-passcode", protect, disablePasscode);
 router.put("/update-profile", protect, updateUserProfile);
 router.delete("/delete-account", protect, deleteAccount);
+router.put("/change-password", protect, changePassword);
 
 module.exports = router;
