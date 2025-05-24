@@ -1,40 +1,40 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const transactionSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     type: {
       type: String,
-      enum: ['income', 'expense'],
+      enum: ["income", "expense"],
       required: true,
     },
     category: {
       type: String,
       enum: [
         // Income Categories
-        'Salary',
-        'Business',
-        'Investment',
-        'Gift',
-        'Interest',
-        'Deposit',
+        "Salary",
+        "Business",
+        "Investment",
+        "Gift",
+        "Interest",
+        "Deposit",
 
         // Expense Categories
-        'Food',
-        'Transport',
-        'Shopping',
-        'Rent',
-        'Utilities',
-        'Entertainment',
-        'Healthcare',
-        'Education',
-        'Travel',
-        'Subscription',
-        'Other',
+        "Food",
+        "Transport",
+        "Shopping",
+        "Rent",
+        "Utilities",
+        "Entertainment",
+        "Healthcare",
+        "Education",
+        "Travel",
+        "Subscription",
+        "Other",
       ],
       required: true,
     },
@@ -54,4 +54,4 @@ const transactionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Transaction', transactionSchema);
+module.exports = mongoose.model("Transaction", transactionSchema);

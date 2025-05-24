@@ -1,5 +1,6 @@
 const Transaction = require("../models/Transaction");
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 
 exports.updateOnboarding = async (req, res) => {
   const userId = req.userId; // set by verifyAccessToken middleware
@@ -56,8 +57,10 @@ exports.addAmountToAccount = async (req, res) => {
   const user = req.user;
   const { amount } = req.body;
 
-  if (!amount || typeof amount !== 'number' || amount <= 0) {
-    return res.status(400).json({ message: 'Amount must be a positive number' });
+  if (!amount || typeof amount !== "number" || amount <= 0) {
+    return res
+      .status(400)
+      .json({ message: "Amount must be a positive number" });
   }
 
   try {
@@ -67,20 +70,20 @@ exports.addAmountToAccount = async (req, res) => {
     // Create a transaction log
     await Transaction.create({
       user: user._id,
-      type: 'income',
-      category: 'Deposit',
+      type: "income",
+      category: "Deposit",
       amount,
-      note: 'Account top-up',
+      note: "Account top-up",
       balanceAfter: user.balance,
     });
 
     res.status(200).json({
-      message: 'Balance updated and transaction logged',
+      message: "Balance updated and transaction logged",
       balance: user.balance,
     });
   } catch (err) {
-    console.error('Add balance error:', err);
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error("Add balance error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -102,6 +105,57 @@ exports.getLoggedInUser = async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.setPasscode = async (req, res) => {
+  const { password, passcode } = req.body;
+
+  if (!/^\d{4,6}$/.test(passcode)) {
+    return res.status(400).json({ message: "Passcode must be 4 to 6 digits" });
+  }
+
+  try {
+    const user = await User.findById(req.user._id).select("+password");
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    const hashedPasscode = await bcrypt.hash(passcode, 10);
+    user.passcode = hashedPasscode;
+
+    await user.save();
+
+    res.status(200).json({ message: "Passcode set successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.disablePasscode = async (req, res) => {
+  const { password } = req.body;
+
+  try {
+    const user = await User.findById(req.user._id).select("+password +passcode");
+
+    if (!user.passcode) {
+      return res.status(400).json({ message: "No passcode set for this account" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    // Remove passcode field
+    user.passcode = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Passcode login disabled" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };

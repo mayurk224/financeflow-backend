@@ -75,6 +75,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    passcode: {
+      type: String,
+      select: false,
+    },
   },
   {
     timestamps: true,
