@@ -83,3 +83,25 @@ exports.addAmountToAccount = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+exports.getLoggedInUser = async (req, res) => {
+  try {
+    const user = req.user;
+
+    res.status(200).json({
+      user: {
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        userType: user.userType,
+        country: user.country,
+        currency: user.currency,
+        balance: user.balance,
+        isOnboarded: user.isOnboarded,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
